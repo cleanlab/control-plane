@@ -1,0 +1,50 @@
+name: OpenTofu Plan Commenter
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install OpenTofu
+        run: |
+          wget https://github.com/opentofu/opentofu/releases/download/v1.9.0/tofu_1.9.0_linux_amd64.tar.gz
+          tar -xzf tofu_1.9.0_linux_amd64.tar.gz
+          sudo mv tofu /usr/local/bin/
+          tofu --version
+
+      - name: Initialize OpenTofu
+        run: |
+          cd infra
+          tofu init
+
+      - name: Run OpenTofu Plan
+        id: plan
+        run: |
+          cd infra
+          tofu plan -no-color > plan_output.txt
+          cat plan_output.txt
+          echo "plan<<EOF" >> $GITHUB_OUTPUT
+          cat plan_output.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on the PR with OpenTofu Plan Output
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ### OpenTofu Plan Output
+            <details>
+            <summary>Click to expand</summary>
+            
+            ```diff
+            ${{ steps.plan.outputs.plan }}
+            ```
+            </details>
