@@ -41,3 +41,5 @@ jobs:
         uses: dflook/tofu-apply@v1
         with:
           path: ${{ steps.set-env.outputs.infra_dir }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
