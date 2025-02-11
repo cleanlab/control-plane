@@ -26,8 +26,8 @@ jobs:
       - name: Set environment
         id: set-env
         run: |
-          # Get the infra directory (infra/staging or infra/main)
-          infra_dir=infra/environments/${{ github.ref }}
+          # Get the infra directory (infra/environments/staging or infra/environments/main)
+          infra_dir=infra/environments/${{ github.ref_name }}
           echo "infra_dir=${infra_dir}" >> $GITHUB_OUTPUT
 
       - name: Configure AWS credentials
