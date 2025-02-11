@@ -27,7 +27,7 @@ jobs:
         id: set-env
         run: |
           # Get the infra directory (infra/environments/staging or infra/environments/main)
-          infra_dir=infra/environments/${{ github.ref_name }}
+          infra_dir=infra/environments/${{ github.event.pull_request.base.ref  }}
           echo "infra_dir=${infra_dir}" >> $GITHUB_OUTPUT
 
       - name: Configure AWS credentials
