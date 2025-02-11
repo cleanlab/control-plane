@@ -1,0 +1,18 @@
+name: deploy-bot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 13 * * 1-5
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: cleanlab/deploy-bot@v1.3.4
+        with:
+          source: staging
+          target: main
+          pr_body: "Daily deployment PR :robot:"
+          should_add_reviewers: true
+          pr_label: "block-merge"
