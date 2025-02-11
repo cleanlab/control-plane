@@ -10,21 +10,8 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "vpc_name" {
-  description = "Name tag for the VPC"
-  type        = string
-  default     = "production-control-plane-vpc"
+variable "number_of_subnets" {
+  description = "Number of subnets to create"
+  type        = number
+  default     = 3
 }
-
-variable "public_subnets" {
-  description = "List of public subnet CIDRs"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
-}
-
-variable "azs" {
-  description = "List of availability zones"
-  type        = list(string)
-  default     = ["us-west-2a", "us-west-2b"]
-}
-

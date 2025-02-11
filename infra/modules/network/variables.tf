@@ -3,17 +3,12 @@ variable "vpc_cidr" {
   type        = string
 }
 
-variable "vpc_name" {
-  description = "Name tag for the VPC"
+variable "number_of_subnets" {
+  description = "Number of subnets to create"
+  type        = number
+}
+
+variable "environment" {
+  description = "Environment"
   type        = string
-}
-
-variable "public_subnets" {
-  description = "List of public subnet CIDR blocks"
-  type        = list(string)
-}
-
-variable "azs" {
-  description = "List of availability zones for the subnets"
-  type        = list(string)
 }

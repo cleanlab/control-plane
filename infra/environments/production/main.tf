@@ -5,7 +5,6 @@ provider "aws" {
 module "vpc" {
   source         = "../../modules/network"
   vpc_cidr       = var.vpc_cidr
-  vpc_name       = var.vpc_name
-  public_subnets = var.public_subnets
-  azs            = var.azs
+  number_of_subnets = var.number_of_subnets
+  environment     = "production"
 }
