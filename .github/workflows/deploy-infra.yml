@@ -1,24 +1,17 @@
-name: Create Tofu plan
+name: Deploy Infra
 
 on:
-  pull_request:
+  push:
     branches:
-      - staging
       - main
-    types:
-      - opened
-      - synchronize
-      - reopened
+      - staging
 
 env:
   aws_region: us-west-2
 
 jobs:
-  plan:
+  deploy:
     runs-on: ubuntu-latest
-    name: Create a plan for an example terraform configuration
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,7 +20,7 @@ jobs:
         id: set-env
         run: |
           # Get the infra directory (infra/environments/staging or infra/environments/main)
-          infra_dir=infra/environments/${{ github.event.pull_request.base.ref  }}
+          infra_dir=infra/environments/${{ github.ref }}
           echo "infra_dir=${infra_dir}" >> $GITHUB_OUTPUT
 
       - name: Configure AWS credentials
@@ -37,7 +30,7 @@ jobs:
           aws-access-key-id: ${{ secrets.aws_access_key_id }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
 
-      - name: tofu plan
-        uses: dflook/tofu-plan@v1
+      - name: tofu apply
+        uses: dflook/tofu-apply@v1
         with:
           path: ${{ steps.set-env.outputs.infra_dir }}
