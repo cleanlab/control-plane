@@ -13,7 +13,7 @@ variable "vpc_cidr" {
 variable "vpc_name" {
   description = "Name tag for the VPC"
   type        = string
-  default     = "staging-vpc"
+  default     = "staging-control-plane-vpc"
 }
 
 variable "public_subnets" {
