@@ -15,12 +15,23 @@ module "eks_bottlerocket" {
   cluster_version = "1.31"
   cluster_endpoint_public_access = true
 
-  enable_cluster_creator_admin_permissions = true
-
   # Add access entry for GHA bot
   access_entries = {
     github_actions = {
       principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/gha-control-plane"
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type       = "cluster"
+          }
+        }
+      }
+    }
+
+    ryan = {
+      principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ryan"
 
       policy_associations = {
         admin = {
