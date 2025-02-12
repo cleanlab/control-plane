@@ -15,6 +15,7 @@ jobs:
     outputs:
       environment: ${{ steps.set-environment.outputs.environment }}
       cluster_name: ${{ steps.set-environment.outputs.cluster_name }}
+      region: ${{ steps.set-environment.outputs.region }}
     steps:
       - name: Set environment
         id: set-environment
@@ -31,13 +32,14 @@ jobs:
               echo "Invalid branch: ${{ github.ref_name }}"
               exit 1
             fi
+            echo "region=${{ env.aws_region }}" >> $GITHUB_OUTPUT
 
   deploy-infra:
     needs: set-environment
     uses: ./.github/workflows/deploy-infra.yml
     with:
       environment: ${{ needs.set-environment.outputs.environment }}
-      aws_region: ${{ env.aws_region }}
+      aws_region: ${{ needs.set-environment.outputs.region }}
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -48,7 +50,7 @@ jobs:
     with:
       environment: ${{ needs.set-environment.outputs.environment }}
       cluster_name: ${{ needs.set-environment.outputs.cluster_name }}
-      region: ${{ env.aws_region }}
+      region: ${{ needs.set-environment.outputs.region }}
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
