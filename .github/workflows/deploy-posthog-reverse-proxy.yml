@@ -28,7 +28,7 @@ jobs:
       - name: Set values files
         id: set-values-files
         run: |
-          echo "values_file=deploy/helm/posthog-reverse-proxy/values/${{ inputs.environment }}.yaml" >> $GITHUB_OUTPUT
+          echo "values_file=deploy/helm/posthog-reverse-proxy/values/hosted/${{ inputs.environment }}.yaml" >> $GITHUB_OUTPUT
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
