@@ -49,11 +49,11 @@ variable "domain" {
 variable "posthog_reverse_proxy_subdomain" {
   description = "PostHog Reverse Proxy Subdomain"
   type        = string
-  default     = "ph-staging-2ISXg5ngI"
+  default     = "ph-staging-2isxg5ngi"
 }
 
 variable "metronome_reverse_proxy_subdomain" {
   description = "Metronome Reverse Proxy Subdomain"
   type        = string
-  default     = "billing-staging-2ISXg5ngI"
+  default     = "billing-staging-2isxg5ngi"
 }

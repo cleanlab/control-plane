@@ -1,5 +1,5 @@
 environment: staging
-domain: billing-staging-2ISXg5ngI.cleanlab.ai
+domain: billing-staging-2isxg5ngi.cleanlab.ai
 
 # Ingress
 ingress:
