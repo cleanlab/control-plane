@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-metronome-reverse-proxy
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-metronome-reverse-proxy
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-metronome-reverse-proxy
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.27
+        ports:
+          - name: http
+            containerPort: {{ .Values.metronome.service.port }}
+            protocol: TCP
+        volumeMounts:
+          - name: nginx-config-template
+            mountPath: /etc/nginx/nginx.conf.template
+            subPath: nginx.conf.template
+        env:
+          - name: METRONOME_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-metronome-reverse-proxy
+                key: api_key
+                
+      volumes:
+        - name: nginx-config-template
+          configMap:
+            name: {{ .Release.Name }}-metronome-reverse-proxy-config

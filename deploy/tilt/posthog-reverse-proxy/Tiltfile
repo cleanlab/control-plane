@@ -2,7 +2,7 @@ load("../utils.Tiltfile", "load_env_as_secrets")
 
 
 def deploy_posthog_reverse_proxy():
-    load_env_as_secrets("posthog-reverse-proxy", "deploy/tilt/posthog-reverse-proxy/.env")
+    load_env_as_secrets("posthog-reverse-proxy", "services/posthog-reverse-proxy/.env")
 
     values = [
         "deploy/helm/posthog-reverse-proxy/values.yaml",

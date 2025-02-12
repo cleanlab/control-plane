@@ -1,6 +1,6 @@
 apiVersion: v2
-name: posthog-reverse-proxy
-description: Reverse proxy for PostHog
+name: billing
+description: Billing services and ingresses
 
 type: application
 
