@@ -1,0 +1,16 @@
+load("../utils.Tiltfile", "load_env_as_secrets")
+
+
+def deploy_posthog_reverse_proxy():
+    load_env_as_secrets("posthog-reverse-proxy", "deploy/tilt/posthog-reverse-proxy/.env")
+
+    values = [
+        "deploy/helm/posthog-reverse-proxy/values.yaml",
+        "deploy/helm/posthog-reverse-proxy/values/local.yaml",
+    ]
+
+    k8s_yaml(helm(
+        "deploy/helm/posthog-reverse-proxy",
+        name="posthog-reverse-proxy",
+        values=values,
+    ))

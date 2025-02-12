@@ -1,1 +1,7 @@
-secrets
+environment: # development, staging, production
+
+secrets:
+  enabled: true
+
+  posthog_project_api_key:
+    key: ""

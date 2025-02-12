@@ -1,0 +1,5 @@
+environment: staging
+
+secrets:
+  posthog_project_api_key:
+    key: "staging/control-plane/posthog-reverse-proxy/posthog_project_api_key"

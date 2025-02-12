@@ -1,0 +1,4 @@
+environment: development
+
+secrets:
+  enabled: false

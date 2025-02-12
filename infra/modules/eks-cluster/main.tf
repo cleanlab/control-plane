@@ -15,6 +15,8 @@ module "eks_bottlerocket" {
   cluster_version = "1.31"
   cluster_endpoint_public_access = true
 
+  enable_cluster_creator_admin_permissions = true
+
   # Add access entry for GHA bot
   access_entries = {
     github_actions = {
@@ -22,20 +24,7 @@ module "eks_bottlerocket" {
 
       policy_associations = {
         admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
-          access_scope = {
-            type       = "cluster"
-          }
-        }
-      }
-    }
-
-    ryan = {
-      principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ryan"
-
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
           access_scope = {
             type       = "cluster"
           }
@@ -91,15 +80,13 @@ module "eks_bottlerocket" {
   tags = local.tags
 }
 
-## Helm provider
+# Helm provider
 data "aws_eks_cluster" "cluster" {
   name = module.eks_bottlerocket.cluster_name
-  depends_on = [ module.eks_bottlerocket ]
 }
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks_bottlerocket.cluster_name
-  depends_on = [ module.eks_bottlerocket ]
 }
 
 provider "helm" {
@@ -164,8 +151,18 @@ module "aws_load_balancer_controller_irsa_role" {
     }
   }
 }
-# CREATE SERVICE ACCOUNT
-# SET SERVICE ACCOUNT CREATE FALSE
+
+resource "kubernetes_service_account" "aws_load_balancer_controller" {
+  metadata {
+    name = "aws-load-balancer-controller"
+    namespace = "kube-system"
+
+    annotations = {
+      "eks.amazonaws.com/role-arn" = module.aws_load_balancer_controller_irsa_role.iam_role_arn
+    }
+  }
+}
+
 
 resource "helm_release" "aws_load_balancer_controller" {
   name       = "aws-load-balancer-controller"
@@ -181,7 +178,12 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "serviceAccount.name"
-    value = module.aws_load_balancer_controller_irsa_role.iam_role_name
+    value = kubernetes_service_account.aws_load_balancer_controller.metadata[0].name
+  }
+
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
   }
 
 }
@@ -204,10 +206,17 @@ module "external_dns_irsa_role" {
   }
 }
 
-resource "kubernetes_service_account" "external_dns" {
+resource "kubernetes_namespace" "external_dns" {
   metadata {
     name = "external-dns"
-    namespace = "external-dns"
+  }
+}
+
+resource "kubernetes_service_account" "external_dns" {
+  depends_on = [ kubernetes_namespace.external_dns ]
+  metadata {
+    name = "external-dns"
+    namespace = kubernetes_namespace.external_dns.metadata[0].name
     annotations = {
       "eks.amazonaws.com/role-arn" = module.external_dns_irsa_role.iam_role_arn
     }
@@ -221,9 +230,8 @@ resource "helm_release" "external_dns" {
   chart      = "external-dns"
   version    = "1.15.0"
 
-  namespace = "external-dns"
-  create_namespace = true
-
+  namespace = kubernetes_namespace.external_dns.metadata[0].name
+  depends_on = [ kubernetes_namespace.external_dns ]
   set {
     name  = "serviceAccount.create"
     value = "false"
@@ -256,10 +264,17 @@ module "external_secrets_irsa_role" {
   }
 }
 
-resource "kubernetes_service_account" "external_secrets" {
+resource "kubernetes_namespace" "external_secrets" {
   metadata {
     name = "external-secrets"
-    namespace = "external-secrets"
+  }
+}
+
+resource "kubernetes_service_account" "external_secrets" {
+  depends_on = [ kubernetes_namespace.external_secrets ]
+  metadata {
+    name = "external-secrets"
+    namespace = kubernetes_namespace.external_secrets.metadata[0].name
     annotations = {
       "eks.amazonaws.com/role-arn" = module.external_secrets_irsa_role.iam_role_arn
     }
@@ -272,8 +287,8 @@ resource "helm_release" "external_secrets" {
   chart      = "external-secrets"
   version    = "v0.12.1"
 
-  namespace = "external-secrets"
-  create_namespace = true
+  namespace = kubernetes_namespace.external_secrets.metadata[0].name
+  depends_on = [ kubernetes_namespace.external_secrets ]
 
   set {
     name  = "serviceAccount.name"
@@ -287,6 +302,7 @@ resource "helm_release" "external_secrets" {
 }
 
 resource "kubernetes_manifest" "cluster_secret_store" {
+  depends_on = [ helm_release.external_secrets ]
 
   manifest = {
     "apiVersion" = "external-secrets.io/v1beta1"
@@ -303,7 +319,7 @@ resource "kubernetes_manifest" "cluster_secret_store" {
             "jwt" = {
               "serviceAccountRef" = {
                 "name"      = kubernetes_service_account.external_secrets.metadata[0].name
-                "namespace" = kubernetes_service_account.external_secrets.metadata[0].namespace
+                "namespace" = kubernetes_namespace.external_secrets.metadata[0].name
               }
             }
           }
@@ -312,5 +328,3 @@ resource "kubernetes_manifest" "cluster_secret_store" {
     }
   }
 }
-
-

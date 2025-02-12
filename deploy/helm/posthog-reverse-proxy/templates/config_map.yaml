@@ -1,0 +1,10 @@
+# This config map is included just to make the helm chart valid.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-reverse-proxy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "posthog-reverse-proxy.labels" . | nindent 4 }}
+data:
+  DUMMY: "DUMMY"

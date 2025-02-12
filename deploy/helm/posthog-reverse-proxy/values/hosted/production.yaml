@@ -1,0 +1,5 @@
+environment: production
+
+secrets:
+  posthog_project_api_key:
+    key: "production/control-plane/posthog-reverse-proxy/posthog_project_api_key"
