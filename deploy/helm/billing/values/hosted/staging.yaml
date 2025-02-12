@@ -8,6 +8,7 @@ ingress:
 # Metronome
 metronome:
   service:
+    type: NodePort
     port: 80
     
 # Secrets
