@@ -4,5 +4,5 @@ description: Billing services and ingresses
 
 type: application
 
-version: 0.1.9
+version: 0.1.10
 appVersion: "1.16.0"

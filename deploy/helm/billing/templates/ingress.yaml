@@ -9,7 +9,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/healthcheck-path: /ingest/health
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.domain }}
 spec:
   ingressClassName: alb
@@ -24,7 +24,7 @@ spec:
                 name: {{ .Release.Name }}-metronome-reverse-proxy
                 port:
                   number: {{ .Values.metronome.service.port }}
-          - path: /health
+          - path: /ingest/health
             pathType: Exact
-            backend: *health-backend
+            backend: *metronome-reverse-proxy-backend
 {{- end }}
