@@ -19,9 +19,12 @@ spec:
         paths:
           - path: /ingest
             pathType: Exact
-            backend:
+            backend: &metronome-reverse-proxy-backend
               service:
                 name: {{ .Release.Name }}-metronome-reverse-proxy
                 port:
                   number: {{ .Values.metronome.service.port }}
+          - path: /health
+            pathType: Exact
+            backend: *health-backend
 {{- end }}
