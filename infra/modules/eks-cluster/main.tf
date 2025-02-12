@@ -1,6 +1,7 @@
 locals {
   tags = {
     Environment = var.environment
+    Region      = var.aws_region
   }
 }
 
@@ -14,13 +15,23 @@ module "eks_bottlerocket" {
   cluster_version = "1.31"
   cluster_endpoint_public_access = true
 
-  enable_cluster_creator_admin_permissions = true
-
   # Add access entry for GHA bot
   access_entries = {
-    # One access entry with a policy associated
     github_actions = {
       principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/gha-control-plane"
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSAdminPolicy"
+          access_scope = {
+            type       = "cluster"
+          }
+        }
+      }
+    }
+
+    ryan = {
+      principal_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ryan"
 
       policy_associations = {
         admin = {
@@ -46,7 +57,7 @@ module "eks_bottlerocket" {
   subnet_ids = var.subnet_ids
 
   eks_managed_node_groups = {
-    example = {
+    bottlerocket = {
       ami_type       = "BOTTLEROCKET_x86_64"
       instance_types = var.instance_types
 
@@ -83,10 +94,12 @@ module "eks_bottlerocket" {
 ## Helm provider
 data "aws_eks_cluster" "cluster" {
   name = module.eks_bottlerocket.cluster_name
+  depends_on = [ module.eks_bottlerocket ]
 }
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks_bottlerocket.cluster_name
+  depends_on = [ module.eks_bottlerocket ]
 }
 
 provider "helm" {
@@ -95,6 +108,12 @@ provider "helm" {
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
     token                  = data.aws_eks_cluster_auth.cluster.token
   }
+}
+
+provider "kubernetes" {
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
 }
 
 # VPC CNI IRSA
@@ -134,7 +153,7 @@ module "ebs_csi_irsa_role" {
 module "aws_load_balancer_controller_irsa_role" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name = "aws-load-balancer-controller"
+  role_name = "${var.environment}-control-plane-aws-load-balancer-controller"
 
   attach_load_balancer_controller_policy = true
 
@@ -145,6 +164,8 @@ module "aws_load_balancer_controller_irsa_role" {
     }
   }
 }
+# CREATE SERVICE ACCOUNT
+# SET SERVICE ACCOUNT CREATE FALSE
 
 resource "helm_release" "aws_load_balancer_controller" {
   name       = "aws-load-balancer-controller"
@@ -171,7 +192,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 module "external_dns_irsa_role" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name = "external-dns"
+  role_name = "${var.environment}-control-plane-external-dns"
 
   attach_external_dns_policy = true
 
@@ -179,6 +200,16 @@ module "external_dns_irsa_role" {
     main = {
       provider_arn = module.eks_bottlerocket.oidc_provider_arn
       namespace_service_accounts = ["external-dns:external-dns"]
+    }
+  }
+}
+
+resource "kubernetes_service_account" "external_dns" {
+  metadata {
+    name = "external-dns"
+    namespace = "external-dns"
+    annotations = {
+      "eks.amazonaws.com/role-arn" = module.external_dns_irsa_role.iam_role_arn
     }
   }
 }
@@ -195,12 +226,12 @@ resource "helm_release" "external_dns" {
 
   set {
     name  = "serviceAccount.create"
-    value = "true"
+    value = "false"
   }
 
   set {
     name  = "serviceAccount.name"
-    value = "external-dns"
+    value = kubernetes_service_account.external_dns.metadata[0].name
   }
 
   set {
@@ -213,7 +244,7 @@ resource "helm_release" "external_dns" {
 module "external_secrets_irsa_role" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name = "external-secrets"
+  role_name = "${var.environment}-control-plane-external-secrets"
 
   attach_external_secrets_policy = true
 
@@ -221,6 +252,16 @@ module "external_secrets_irsa_role" {
     main = {
       provider_arn = module.eks_bottlerocket.oidc_provider_arn
       namespace_service_accounts = ["external-secrets:external-secrets"]
+    }
+  }
+}
+
+resource "kubernetes_service_account" "external_secrets" {
+  metadata {
+    name = "external-secrets"
+    namespace = "external-secrets"
+    annotations = {
+      "eks.amazonaws.com/role-arn" = module.external_secrets_irsa_role.iam_role_arn
     }
   }
 }
@@ -236,11 +277,40 @@ resource "helm_release" "external_secrets" {
 
   set {
     name  = "serviceAccount.name"
-    value = "external-secrets"
+    value = kubernetes_service_account.external_secrets.metadata[0].name
   }
 
   set {
     name  = "serviceAccount.create"
-    value = "true"
+    value = "false"
   }
 }
+
+resource "kubernetes_manifest" "cluster_secret_store" {
+
+  manifest = {
+    "apiVersion" = "external-secrets.io/v1beta1"
+    "kind"       = "ClusterSecretStore"
+    "metadata" = {
+      "name" = "${var.environment}-control-plane-cluster-secret-store"
+    }
+    "spec" = {
+      "provider" = {
+        "aws" = {
+          "service" = "SecretsManager"
+          "region"  = var.aws_region
+          "auth" = {
+            "jwt" = {
+              "serviceAccountRef" = {
+                "name"      = kubernetes_service_account.external_secrets.metadata[0].name
+                "namespace" = kubernetes_service_account.external_secrets.metadata[0].namespace
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+

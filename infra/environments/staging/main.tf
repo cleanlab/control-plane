@@ -18,4 +18,5 @@ module "eks_cluster" {
   desired_size   = var.cluster_desired_size
   instance_types = var.cluster_instance_types
   environment    = "staging"
+  aws_region     = var.aws_region
 }
