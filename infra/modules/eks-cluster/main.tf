@@ -118,7 +118,7 @@ provider "kubernetes" {
 module "vpc_cni_irsa_role" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name = "vpc-cni"
+  role_name = "${var.environment}-control-plane-vpc-cni"
 
   attach_vpc_cni_policy = true
   vpc_cni_enable_ipv4   = true
@@ -135,7 +135,7 @@ module "vpc_cni_irsa_role" {
 module "ebs_csi_irsa_role" {
   source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
-  role_name = "ebs-csi"
+  role_name = "${var.environment}-control-plane-ebs-csi"
 
   attach_ebs_csi_policy = true
 
