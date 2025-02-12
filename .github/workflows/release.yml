@@ -34,33 +34,21 @@ jobs:
 
   deploy-infra:
     needs: set-environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Deploy infra
-        uses: ./.github/workflows/deploy-infra.yml
-        with:
-          environment: ${{ needs.set-environment.outputs.environment }}
-          aws_region: ${{ env.aws_region }}
-        secrets:
-          aws_access_key_id: ${{ secrets.aws_access_key_id }}
-          aws_secret_access_key: ${{ secrets.aws_secret_access_key }}
+    uses: ./.github/workflows/deploy-infra.yml
+    with:
+      environment: ${{ needs.set-environment.outputs.environment }}
+      aws_region: ${{ env.aws_region }}
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   deploy-services:
     needs: [deploy-infra, set-environment]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Deploy services
-        uses: ./.github/workflows/deploy-services.yml
-        with:
-          environment: ${{ needs.set-environment.outputs.environment }}
-          cluster_name: ${{ needs.set-environment.outputs.cluster_name }}
-          region: ${{ env.aws_region }}
-        secrets:
-          aws_access_key_id: ${{ secrets.aws_access_key_id }}
-          aws_secret_access_key: ${{ secrets.aws_secret_access_key }}
+    uses: ./.github/workflows/deploy-services.yml
+    with:
+      environment: ${{ needs.set-environment.outputs.environment }}
+      cluster_name: ${{ needs.set-environment.outputs.cluster_name }}
+      region: ${{ env.aws_region }}
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
