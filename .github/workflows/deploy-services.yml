@@ -1,0 +1,25 @@
+name: Deploy Services
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      cluster_name:
+        required: true
+        type: string
+      region:
+        required: true
+        type: string
+
+jobs:
+  deploy-posthog-reverse-proxy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy posthog reverse proxy
+        uses: ./.github/workflows/deploy-posthog-reverse-proxy.yml
+        with:
+          environment: ${{ inputs.environment }}
+          cluster_name: ${{ inputs.cluster_name }}
+          region: ${{ inputs.region }}

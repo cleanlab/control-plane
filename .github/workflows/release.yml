@@ -1,0 +1,54 @@
+name: Release control-plane
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+env:
+  aws_region: us-west-2
+
+jobs:
+  set-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-environment.outputs.environment }}
+      cluster_name: ${{ steps.set-environment.outputs.cluster_name }}
+    steps:
+      - name: Set environment
+        id: set-environment
+        run: |
+            if [ "${{ github.ref_name }}" = "main" ]; then
+              echo "environment=production" >> $GITHUB_OUTPUT
+              # TODO: get this from the tofu output
+              echo "cluster_name=production-control-plane" >> $GITHUB_OUTPUT
+            elif [ "${{ github.ref_name }}" = "staging" ]; then
+              echo "environment=staging" >> $GITHUB_OUTPUT
+              # TODO: get this from the tofu output
+              echo "cluster_name=staging-control-plane" >> $GITHUB_OUTPUT
+            else
+              echo "Invalid branch: ${{ github.ref_name }}"
+              exit 1
+            fi
+
+  deploy-infra:
+    needs: set-environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy infra
+        uses: ./.github/workflows/deploy-infra.yml
+        with:
+          environment: ${{ needs.set-environment.outputs.environment }}
+          aws_region: ${{ env.aws_region }}
+
+  deploy-services:
+    needs: [deploy-infra, set-environment]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy services
+        uses: ./.github/workflows/deploy-services.yml
+        with:
+          environment: ${{ needs.set-environment.outputs.environment }}
+          cluster_name: ${{ needs.set-environment.outputs.cluster_name }}
+          region: ${{ env.aws_region }}

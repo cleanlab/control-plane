@@ -1,0 +1,44 @@
+name: Deploy Posthog Reverse Proxy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      cluster_name:
+        required: true
+        type: string
+      region:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set values files
+        id: set-values-files
+        run: |
+          echo "values_file=deploy/helm/posthog-reverse-proxy/values/${{ inputs.environment }}.yaml" >> $GITHUB_OUTPUT
+
+      - name: Connect to EKS cluster
+        run: |
+          aws eks update-kubeconfig \
+          --name ${{ inputs.cluster_name }} \
+          --region ${{ inputs.region }}
+
+      - name: Update chart dependencies
+        run: |
+          helm dependency build deploy/helm/posthog-reverse-proxy
+
+      - name: Deploy posthog reverse proxy
+        run: |
+          helm upgrade --install \
+          posthog-reverse-proxy deploy/helm/posthog-reverse-proxy \
+          --namespace posthog-reverse-proxy \
+          --create-namespace \
+          --values ${{ steps.set-values-files.outputs.values_file }}
