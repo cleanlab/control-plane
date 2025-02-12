@@ -14,7 +14,7 @@ data:
         listen {{ .Values.metronome.service.port }};
         server_name {{ .Values.domain }};
 
-        location /ingest {
+        location = /ingest {
           if ($http_x_is_cleanlab_origin != "true") {
             return 403;
           }
