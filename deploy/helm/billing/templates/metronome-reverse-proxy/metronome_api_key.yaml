@@ -2,7 +2,7 @@
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: {{ .Release.Name }}-metronome-api-key
+  name: {{ .Release.Name }}-metronome-reverse-proxy
   labels:
     {{- include "billing.labels" . | nindent 4 }}
 spec:
@@ -11,7 +11,7 @@ spec:
     kind: ClusterSecretStore
     name: {{ .Values.environment }}-control-plane-cluster-secret-store
   target:
-    name: {{ .Release.Name }}-metronome-api-key
+    name: {{ .Release.Name }}-metronome-reverse-proxy
     creationPolicy: Owner
   dataFrom:
   - extract:
