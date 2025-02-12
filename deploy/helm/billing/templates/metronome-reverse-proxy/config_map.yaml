@@ -15,6 +15,10 @@ data:
         server_name {{ .Values.domain }};
 
         location /ingest {
+          if ($http_x_is_cleanlab_origin != "true") {
+            return 403;
+          }
+
           limit_req zone=one burst=10 nodelay;
 
           rewrite ^/ingest$ /v1/ingest break;
