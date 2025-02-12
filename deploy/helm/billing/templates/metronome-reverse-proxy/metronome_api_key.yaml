@@ -1,0 +1,19 @@
+{{- if .Values.secrets.enabled }}
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: {{ .Release.Name }}-metronome-api-key
+  labels:
+    {{- include "billing.labels" . | nindent 4 }}
+spec:
+  refreshInterval: 5m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: {{ .Values.environment }}-control-plane-cluster-secret-store
+  target:
+    name: {{ .Release.Name }}-metronome-api-key
+    creationPolicy: Owner
+  dataFrom:
+  - extract:
+      key: {{ .Values.secrets.metronome_api_key.key }}
+{{- end }}
