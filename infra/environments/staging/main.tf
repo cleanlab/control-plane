@@ -20,3 +20,11 @@ module "eks_cluster" {
   environment    = "staging"
   aws_region     = var.aws_region
 }
+
+module "domains" {
+  source = "../../modules/domains"
+  environment = "staging"
+  domain = var.domain
+  posthog_reverse_proxy_subdomain = var.posthog_reverse_proxy_subdomain
+  metronome_reverse_proxy_subdomain = var.metronome_reverse_proxy_subdomain
+}

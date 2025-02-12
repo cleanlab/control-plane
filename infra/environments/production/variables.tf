@@ -39,3 +39,22 @@ variable "cluster_instance_types" {
   type        = list(string)
   default     = ["m5.large", "m5.xlarge"]
 }
+
+
+variable "domain" {
+  description = "Domain"
+  type        = string
+  default     = "cleanlab.ai"
+}
+
+variable "posthog_reverse_proxy_subdomain" {
+  description = "PostHog Reverse Proxy Subdomain"
+  type        = string
+  default     = "ph"
+}
+
+variable "metronome_reverse_proxy_subdomain" {
+  description = "Metronome Reverse Proxy Subdomain"
+  type        = string
+  default     = "billing"
+}
