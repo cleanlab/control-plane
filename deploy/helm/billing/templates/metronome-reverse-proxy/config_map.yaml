@@ -21,9 +21,10 @@ data:
           
           proxy_pass https://api.metronome.com;
           proxy_set_header Authorization "Bearer $METRONOME_API_KEY";
-          proxy_set_header Host $host;
+          proxy_set_header X-Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
           proxy_set_header X-Forwarded-Proto $scheme;
         }
       }
+    }

@@ -13,6 +13,25 @@ spec:
       labels:
         app: {{ .Release.Name }}-metronome-reverse-proxy
     spec:
+      initContainers:
+      - name: init-nginx-config
+        image: nginx:1.27
+        command: ["/bin/sh", "-c"]
+        args:
+          - envsubst '$METRONOME_API_KEY' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+        env:
+          - name: METRONOME_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-metronome-reverse-proxy
+                key: api_key
+        volumeMounts:
+          - name: nginx-config-template
+            mountPath: /etc/nginx/nginx.conf.template
+            subPath: nginx.conf.template
+          - name: nginx-config
+            mountPath: /etc/nginx/
+
       containers:
       - name: nginx
         image: nginx:1.27
@@ -21,17 +40,13 @@ spec:
             containerPort: {{ .Values.metronome.service.port }}
             protocol: TCP
         volumeMounts:
-          - name: nginx-config-template
-            mountPath: /etc/nginx/nginx.conf.template
-            subPath: nginx.conf.template
-        env:
-          - name: METRONOME_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Release.Name }}-metronome-reverse-proxy
-                key: api_key
-                
+          - name: nginx-config
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+      
       volumes:
         - name: nginx-config-template
           configMap:
             name: {{ .Release.Name }}-metronome-reverse-proxy-config
+        - name: nginx-config
+          emptyDir: {}
