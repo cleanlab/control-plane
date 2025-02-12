@@ -12,14 +12,25 @@ on:
       region:
         required: true
         type: string
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
 
 jobs:
   deploy-posthog-reverse-proxy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Deploy posthog reverse proxy
         uses: ./.github/workflows/deploy-posthog-reverse-proxy.yml
         with:
           environment: ${{ inputs.environment }}
           cluster_name: ${{ inputs.cluster_name }}
           region: ${{ inputs.region }}
+        secrets:
+          aws_access_key_id: ${{ secrets.aws_access_key_id }}
+          aws_secret_access_key: ${{ secrets.aws_secret_access_key }}
