@@ -1,2 +1,56 @@
-# TODO!!
 name: Deploy Billing
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      cluster_name:
+        required: true
+        type: string
+      region:
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set values files
+        id: set-values-files
+        run: |
+          echo "values_file=deploy/helm/billing/values/hosted/${{ inputs.environment }}.yaml" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.region }}
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+
+      - name: Connect to EKS cluster
+        run: |
+          aws eks update-kubeconfig \
+          --name ${{ inputs.cluster_name }} \
+          --region ${{ inputs.region }}
+
+      - name: Update chart dependencies
+        run: |
+          helm dependency build deploy/helm/billing
+
+      - name: Deploy billing
+        run: |
+          helm upgrade --install \
+          billing deploy/helm/billing \
+          --namespace billing \
+          --create-namespace \
+          --values ${{ steps.set-values-files.outputs.values_file }}
