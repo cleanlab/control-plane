@@ -339,3 +339,19 @@ resource "kubernetes_manifest" "cluster_secret_store" {
     }
   }
 }
+
+resource "kubernetes_manifest" "ebs_storage_class" {
+  manifest = {
+    "apiVersion" = "storage.k8s.io/v1"
+    "kind"       = "StorageClass"
+    "metadata" = {
+      "name" = "ebs-sc"
+    }
+    "provisioner" = "ebs.csi.aws.com"
+    "volumeBindingMode" = "WaitForFirstConsumer"
+    "parameters" = {
+      "type" = "gp3"
+      "fsType" = "ext4"
+    }
+  }
+}
