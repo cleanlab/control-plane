@@ -32,7 +32,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Release.Name }}-backend
+                name: {{ .Release.Name }}-backend-reverse-proxy
                 port:
                   number: {{ .Values.backend.service.port }}
 {{- end }}
