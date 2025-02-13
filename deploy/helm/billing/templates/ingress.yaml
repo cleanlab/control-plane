@@ -31,9 +31,12 @@ spec:
           
           - path: /api
             pathType: Prefix
-            backend:
+            backend: &backend-reverse-proxy-backend
               service:
                 name: {{ .Release.Name }}-backend-reverse-proxy
                 port:
                   number: {{ .Values.backend.service.port }}
+          - path: /api/health
+            pathType: Exact
+            backend: *backend-reverse-proxy-backend
 {{- end }}
