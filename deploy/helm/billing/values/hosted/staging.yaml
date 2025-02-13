@@ -17,3 +17,6 @@ secrets:
 
   metronome_api_key:
     key: "staging/control-plane/metronome-reverse-proxy/metronome_api_key"
+
+  internal_api_keys:
+    key: "staging/control-plane/billing/internal-api-keys"

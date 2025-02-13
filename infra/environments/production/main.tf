@@ -28,3 +28,12 @@ module "domains" {
   posthog_reverse_proxy_subdomain = var.posthog_reverse_proxy_subdomain
   metronome_reverse_proxy_subdomain = var.metronome_reverse_proxy_subdomain
 }
+
+module "api_keys" {
+  source = "../../modules/api_keys"
+  environment = "production"
+  aws_region = var.aws_region
+  api_key_name = var.api_key_name
+  api_key_description = var.api_key_description
+  api_key_field_names = var.api_key_field_names
+}
