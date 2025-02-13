@@ -1,0 +1,31 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-metronome-reverse-proxy-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "billing.labels" . | nindent 4 }}
+  annotations:
+    alb.ingress.kubernetes.io/group.name: {{ .Values.environment }}-billing
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /ingest/health
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.domain }}
+spec:
+  ingressClassName: alb
+  rules:
+    - host: {{ .Values.domain }}
+      http:
+        paths:
+          - path: /ingest
+            pathType: Exact
+            backend: &metronome-reverse-proxy-backend
+              service:
+                name: {{ .Release.Name }}-metronome-reverse-proxy
+                port:
+                  number: {{ .Values.metronome.service.port }}
+          - path: /ingest/health
+            pathType: Exact
+            backend: *metronome-reverse-proxy-backend
+{{- end }}
