@@ -1,4 +1,19 @@
 environment: development
+domain: localhost
 
+# Ingress
+ingress:
+  enabled: false
+
+# Posthog
+posthog:
+  service:
+    type: ClusterIP
+    port: 80
+
+# Secrets
 secrets:
   enabled: false
+
+  posthog_project_api_key:
+    key: ""

@@ -14,3 +14,11 @@ def deploy_posthog_reverse_proxy():
         name="posthog-reverse-proxy",
         values=values,
     ))
+
+    k8s_resource(
+        "posthog-reverse-proxy",
+        port_forwards=[
+            port_forward(8080, 80, name="posthog-reverse-proxy"),
+        ],
+        labels=["posthog-reverse-proxy"],
+    )

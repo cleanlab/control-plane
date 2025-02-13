@@ -1,5 +1,19 @@
 environment: staging
+domain: ph-staging.cleanlab.ai
 
+# Ingress
+ingress:
+  enabled: true
+
+# Posthog
+posthog:
+  service:
+    type: NodePort
+    port: 80  
+
+# Secrets
 secrets:
+  enabled: true
+
   posthog_project_api_key:
     key: "staging/control-plane/posthog-reverse-proxy/posthog_project_api_key"

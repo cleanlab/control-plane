@@ -1,0 +1,42 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-posthog-reverse-proxy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "posthog-reverse-proxy.labels" . | nindent 4 }}
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /posthog/health
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.domain }}
+    alb.ingress.kubernetes.io/backend-protocol: https
+
+spec:
+  ingressClassName: alb
+  rules:
+  - host: {{ .Values.domain }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: {{ .Release.Name }}-posthog-reverse-proxy
+            port:
+              name: https
+      - pathType: Prefix
+        path: /static
+        backend:
+          service:
+            name: {{ .Release.Name }}-posthog-assets-proxy
+            port:
+              name: https
+      - pathType: Exact
+        path: /posthog/health
+        backend:
+          service:
+            name: {{ .Release.Name }}-posthog-reverse-proxy
+            port:
+              name: https
