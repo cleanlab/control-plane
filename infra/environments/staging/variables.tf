@@ -57,3 +57,15 @@ variable "metronome_reverse_proxy_subdomain" {
   type        = string
   default     = "billing-staging-2isxg5ngi"
 }
+
+variable "api_key_names" {
+  description = "API key names"
+  type        = list(string)
+  default     = ["billing/internal-api-key/codex"]
+}
+
+variable "api_key_descriptions" {
+  description = "API key descriptions"
+  type        = list(string)
+  default     = ["API key to authenticate internal billing API requests from Codex"]
+}

@@ -1,0 +1,24 @@
+{{- if .Values.secrets.enabled }}
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: {{ .Release.Name }}-internal-api-keys
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "billing.labels" . | nindent 4 }}
+spec:
+  refreshInterval: 5m
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: {{ .Values.environment }}-control-plane-cluster-secret-store
+  target:
+    name: {{ .Release.Name }}-internal-api-keys
+    creationPolicy: Owner
+  dataFrom:
+    - find:
+        path: {{ .Values.secrets.internal_api_key.prefix }}
+      rewrite:
+        - regexp:
+            source: "{{ .Values.secrets.internal_api_key.prefix }}/(.*)"
+            target: "$1"
+{{- end }}
