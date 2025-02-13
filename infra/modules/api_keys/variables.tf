@@ -22,3 +22,8 @@ variable "api_key_field_names" {
   description = "API key field names"
   type        = list(string)
 }
+
+variable "api_key_replica_region" {
+  description = "API key replica region"
+  type        = string
+}

@@ -75,3 +75,9 @@ variable "api_key_field_names" {
   type        = list(string)
   default     = ["codex"]
 }
+
+variable "api_key_replica_region" {
+  description = "API key replica region"
+  type        = string
+  default     = "us-east-1"
+}

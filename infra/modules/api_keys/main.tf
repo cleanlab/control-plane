@@ -12,6 +12,10 @@ resource "random_id" "api_keys" {
 resource "aws_secretsmanager_secret" "api_keys" {
   name     = "${var.environment}/control-plane/${var.api_key_name}"
   description = var.api_key_description
+
+  replica {
+    region = var.api_key_replica_region
+  }
 }
 
 # Create a secret version to store the actual API key value as JSON

@@ -9,7 +9,15 @@ ingress:
 metronome:
   service:
     port: 80
-    
+
+# Backend
+backend:
+  service:
+    port: 80
+
+  container:
+    port: 8080
+
 # Secrets
 secrets:
   enabled: true

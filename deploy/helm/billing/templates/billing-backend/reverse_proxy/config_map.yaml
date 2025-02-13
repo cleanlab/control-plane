@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-backend-reverse-proxy-config
+  namespace: {{ .Release.Namespace }}
+data:
+  nginx.conf.template: |
+    events {}
+    http {
+
+      limit_req_zone $binary_remote_addr zone=one:10m rate=50r/s;
+
+      server {
+        listen {{ .Values.backend.service.port }};
+        server_name {{ .Values.domain }};
+
+        location = /api/health {
+          return 200;
+        }
+
+        location /api/codex {
+          if ($http_x_is_api_key != $CODEX_INTERNAL_API_KEY) {
+            return 403;
+          }
+          
+          proxy_pass /protected;
+        }
+
+        location /protected {
+          internal;
+
+          limit_req zone=one burst=10 nodelay;
+
+          return 202;
+          # proxy_pass http://{{ .Release.Name }}-backend;
+          # proxy_set_header X-Host $host;
+          # proxy_set_header X-Real-IP $remote_addr;
+          # proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          # proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    }

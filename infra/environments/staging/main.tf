@@ -36,4 +36,5 @@ module "api_keys" {
   api_key_name = var.api_key_name
   api_key_description = var.api_key_description
   api_key_field_names = var.api_key_field_names
+  api_key_replica_region = var.api_key_replica_region
 }

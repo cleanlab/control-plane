@@ -10,7 +10,16 @@ metronome:
   service:
     type: NodePort
     port: 80
-    
+
+# Backend
+backend:
+  service:
+    type: NodePort
+    port: 80
+
+  container:
+    port: 80
+
 # Secrets
 secrets:
   enabled: true
