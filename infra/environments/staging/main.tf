@@ -33,6 +33,7 @@ module "api_keys" {
   source = "../../modules/api_keys"
   environment = "staging"
   aws_region = var.aws_region
-  api_key_names = var.api_key_names
-  api_key_descriptions = var.api_key_descriptions
+  api_key_name = var.api_key_name
+  api_key_description = var.api_key_description
+  api_key_field_names = var.api_key_field_names
 }

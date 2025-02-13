@@ -17,5 +17,5 @@ secrets:
   metronome_api_key:
     key: ""
 
-  internal_api_key:
-    prefix: ""
+  internal_api_keys:
+    key: ""

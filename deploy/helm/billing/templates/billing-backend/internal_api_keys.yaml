@@ -16,9 +16,5 @@ spec:
     creationPolicy: Owner
   dataFrom:
     - extract:
-        path: {{ .Values.secrets.internal_api_key.prefix }}/codexz
-      rewrite:
-        - regexp:
-            source: "{{ .Values.secrets.internal_api_key.prefix }}/(.*)"
-            target: "$1-api-key"
+        key: {{ .Values.secrets.internal_api_keys.key }}
 {{- end }}

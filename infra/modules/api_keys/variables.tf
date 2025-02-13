@@ -8,12 +8,17 @@ variable "aws_region" {
   type        = string
 }
 
-variable "api_key_names" {
-  description = "API key names"
-  type        = list(string)
+variable "api_key_name" {
+  description = "API key name"
+  type        = string
 }
 
-variable "api_key_descriptions" {
-  description = "API key descriptions"
+variable "api_key_description" {
+  description = "API key description"
+  type        = string
+}
+
+variable "api_key_field_names" {
+  description = "API key field names"
   type        = list(string)
 }
