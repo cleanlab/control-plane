@@ -9,7 +9,8 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-    alb.ingress.kubernetes.io/healthcheck-path: /ingest/health, /api/health
+    alb.ingress.kubernetes.io/healthcheck-path: /ingest/health
+    alb.ingress.kubernetes.io/healthcheck-path: /api/health
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.domain }}
 spec:
   ingressClassName: alb
