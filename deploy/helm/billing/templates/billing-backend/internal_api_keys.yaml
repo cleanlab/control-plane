@@ -15,10 +15,10 @@ spec:
     name: {{ .Release.Name }}-internal-api-keys
     creationPolicy: Owner
   dataFrom:
-    - find:
-        path: {{ .Values.secrets.internal_api_key.prefix }}
+    - extract:
+        path: {{ .Values.secrets.internal_api_key.prefix }}/codexz
       rewrite:
         - regexp:
             source: "{{ .Values.secrets.internal_api_key.prefix }}/(.*)"
-            target: "$1"
+            target: "$1-api-key"
 {{- end }}
