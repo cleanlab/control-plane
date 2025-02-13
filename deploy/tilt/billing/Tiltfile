@@ -3,6 +3,7 @@ load("../utils.Tiltfile", "load_env_as_secrets")
 
 def deploy_billing():
     load_env_as_secrets("billing-metronome-reverse-proxy", "services/billing/metronome-reverse-proxy/.env")
+    load_env_as_secrets("billing-internal-api-keys", "services/billing/backend-reverse-proxy/.env")
 
     values = [
         "deploy/helm/billing/values.yaml",
@@ -20,6 +21,14 @@ def deploy_billing():
         port_forwards=[
             # TODO: change port
             port_forward(8080, 80, name="billing-metronome-reverse-proxy"),
+        ],
+        labels=["billing"]
+    )
+
+    k8s_resource(
+        "billing-backend-reverse-proxy",
+        port_forwards=[
+            port_forward(8081, 80, name="billing-backend-reverse-proxy"),
         ],
         labels=["billing"]
     )

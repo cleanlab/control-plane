@@ -19,14 +19,14 @@ data:
         }
 
         location /api/codex {
-          if ($http_x_is_api_key != $CODEX_INTERNAL_API_KEY) {
+          if ($http_x_api_key != $CODEX_INTERNAL_API_KEY) {
             return 403;
           }
           
-          proxy_pass /protected;
+          rewrite ^/(.*)$ /private/$1;
         }
 
-        location /protected {
+        location /private/api {
           internal;
 
           limit_req zone=one burst=10 nodelay;
