@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-posthog-reverse-proxy
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-posthog-reverse-proxy
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-posthog-reverse-proxy
+    spec:
+      initContainers:
+      - name: init-nginx-config
+        image: nginx:1.27
+        command: ["/bin/sh", "-c"]
+        args:
+          - envsubst '$POSTHOG_PROJECT_API_KEY' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+        env:
+          - name: POSTHOG_PROJECT_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-posthog-reverse-proxy
+                key: project_api_key
+        volumeMounts:
+          - name: nginx-config-template
+            mountPath: /etc/nginx/nginx.conf.template
+            subPath: nginx.conf.template
+          - name: nginx-config
+            mountPath: /etc/nginx/
+
+      containers:
+      - name: nginx
+        image: nginx:1.27
+        ports:
+          - name: http
+            containerPort: {{ .Values.posthog.service.port }}
+            protocol: TCP
+        volumeMounts:
+          - name: nginx-config
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+      
+      volumes:
+        - name: nginx-config-template
+          configMap:
+            name: {{ .Release.Name }}-posthog-reverse-proxy-config
+        - name: nginx-config
+          emptyDir: {}
