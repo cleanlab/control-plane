@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-metronome-reverse-proxy
+  name: {{ .Release.Name }}-backend-reverse-proxy
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-metronome-reverse-proxy
+      app: {{ .Release.Name }}-backend-reverse-proxy
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-metronome-reverse-proxy
+        app: {{ .Release.Name }}-backend-reverse-proxy
     spec:
       initContainers:
       - name: init-nginx-config
@@ -47,6 +47,6 @@ spec:
       volumes:
         - name: nginx-config-template
           configMap:
-            name: {{ .Release.Name }}-metronome-reverse-proxy-config
+            name: {{ .Release.Name }}-backend-reverse-proxy-config
         - name: nginx-config
           emptyDir: {}
